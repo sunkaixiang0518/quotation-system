@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>材料資料庫</title>
+
+    <link rel="stylesheet" href="material.css">
+
+</head>
+
+
+<body>
+
+    <h1>材料資料庫</h1>
+
+
+    <!-- 材料輸入區 -->
+
+    <div class="material-form">
+
+        <h2>新增材料</h2>
+
+
+        <!-- 材料名稱 -->
+
+        <label>
+
+            材料名稱：
+
+            <input
+                type="text"
+                id="materialName"
+                placeholder="例如：3分水管"
+            >
+
+        </label>
+
+
+        <!-- 材料規格 -->
+
+        <label>
+
+            規格：
+
+            <input
+                type="text"
+                id="materialSpec"
+                placeholder="例如：4米"
+            >
+
+        </label>
+
+
+        <!-- 材料單價 -->
+
+        <label>
+
+            單價：
+
+            <input
+                type="number"
+                id="materialPrice"
+                placeholder="例如：570"
+            >
+
+        </label>
+
+
+        <!-- 儲存材料 -->
+
+        <button id="saveMaterial">
+            儲存材料
+        </button>
+
+    </div>
+
+
+    <!-- 材料列表 -->
+
+    <h2>材料列表</h2>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>材料名稱</th>
+
+                <th>規格</th>
+
+                <th>單價</th>
+
+                <th>操作</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="materialTable">
+
+        </tbody>
+
+    </table>
+
+
+    <script src="material.js"></script>
+
+</body>
+
+</html>

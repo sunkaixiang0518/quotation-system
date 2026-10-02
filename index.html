@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>水電材料估價單</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>水電材料估價單</h1>
+
+    <div class="material-manager">
+
+    <h2>材料管理</h2>
+
+    <input
+        type="text"
+        id="materialName"
+        placeholder="材料名稱"
+    >
+
+    <input
+        type="text"
+        id="materialSpec"
+        placeholder="規格"
+    >
+
+    <input
+        type="number"
+        id="materialPrice"
+        placeholder="單價"
+    >
+
+    <button id="saveMaterial">
+        儲存材料
+    </button>
+
+</div>
+
+    <div class="info">
+
+        <label>
+            工程名稱：
+            <input type="text">
+        </label>
+
+        <label>
+            日期：
+            <input type="date">
+        </label>
+
+    </div>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+    <th>品名</th>
+    <th>規格</th>
+    <th>數量</th>
+    <th>單價</th>
+    <th>金額</th>
+    <th>備註</th>
+    <th class="operation-column">操作</th>
+</tr>
+
+        </thead>
+
+
+        <tbody id="materialTable">
+
+    <tr>
+
+       <td style="position: relative;">
+    <input type="text" class="name">
+
+    <div class="materialSuggestions"></div>
+</td>
+
+        <td>
+            <input type="text" class="spec">
+        </td>
+
+        <td>
+            <input type="number" class="quantity">
+        </td>
+
+        <td>
+            <input type="number" class="price">
+        </td>
+
+        <td>
+            <input type="number" class="amount" readonly>
+        </td>
+
+        <td>
+            <input type="text" class="remark">
+        </td>
+
+        <td class="operation-column">
+    <button class="deleteRow">刪除</button>
+</td>
+
+    </tr>
+
+</tbody>
+
+    </table>
+
+
+<button id="addRow">＋ 新增材料</button>
+
+<button id="printQuotation">
+    匯出 PDF
+</button>
+
+
+    <h2>
+        合計：
+        <span id="totalAmount">0</span>
+        元
+    </h2>
+
+</body>
+
+</html>
+<script src="app.js"></script>

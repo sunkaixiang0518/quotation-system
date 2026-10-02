@@ -1,0 +1,123 @@
+/* =========================
+   整個網頁
+   ========================= */
+
+body {
+    font-family: Arial, "Microsoft JhengHei", sans-serif;
+
+    background-color: #f5f5f5;
+
+    margin: 0;
+
+    padding: 30px;
+}
+
+
+/* =========================
+   標題
+   ========================= */
+
+h1 {
+    text-align: center;
+}
+
+
+/* =========================
+   新增材料區域
+   ========================= */
+
+.material-form {
+
+    background-color: white;
+
+    padding: 20px;
+
+    margin-bottom: 30px;
+
+    border-radius: 8px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+/* 材料輸入欄位 */
+
+.material-form label {
+
+    display: block;
+
+    margin-bottom: 15px;
+}
+
+
+/* 輸入框 */
+
+input {
+
+    padding: 8px;
+
+    font-size: 16px;
+
+    width: 300px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   按鈕
+   ========================= */
+
+button {
+
+    padding: 10px 20px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   材料列表
+   ========================= */
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background-color: white;
+}
+
+
+/* 表格框線 */
+
+th,
+td {
+
+    border: 1px solid #999;
+
+    padding: 10px;
+
+    text-align: center;
+}
+
+
+/* 表頭 */
+
+th {
+
+    background-color: #eeeeee;
+}
+
+
+/* 刪除按鈕 */
+
+.deleteMaterial {
+
+    padding: 6px 12px;
+
+    font-size: 14px;
+}
