@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>估價單管理</title>
+
+</head>
+
+<body>
+
+    <!-- 估價單管理標題 -->
+
+    <h1>估價單管理</h1>
+
+
+    <!-- 新增估價單 -->
+
+    <button id="newQuotation">
+        ＋ 新增估價單
+    </button>
+
+
+    <!-- 估價單列表 -->
+
+    <h2>我的估價單</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>工程名稱</th>
+
+                <th>建立日期</th>
+
+                <th>操作</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="quotationTable">
+
+        </tbody>
+
+    </table>
+
+
+    <script>
+
+        // =========================
+        // 取得估價單資料
+        // =========================
+
+        let quotations = JSON.parse(
+            localStorage.getItem("quotations")
+        ) || [];
+
+
+        // =========================
+        // 取得 HTML 元素
+        // =========================
+
+        const quotationTable =
+            document.getElementById(
+                "quotationTable"
+            );
+
+        const newQuotationButton =
+            document.getElementById(
+                "newQuotation"
+            );
+
+
+        // =========================
+        // 顯示估價單
+        // =========================
+
+        function displayQuotations() {
+
+            // 清空列表
+            quotationTable.innerHTML = "";
+
+
+            // 一筆一筆顯示
+            quotations.forEach(
+                function(quotation, index) {
+
+                    const row =
+                        document.createElement("tr");
+
+
+                    row.innerHTML = `
+
+                        <td>
+                            ${quotation.name}
+                        </td>
+
+                        <td>
+                            ${quotation.date}
+                        </td>
+
+                        <td>
+
+                            <button
+                                onclick="openQuotation(${index})"
+                            >
+                                開啟
+                            </button>
+
+                            <button
+                                onclick="deleteQuotation(${index})"
+                            >
+                                刪除
+                            </button>
+
+                        </td>
+
+                    `;
+
+
+                    quotationTable.appendChild(row);
+
+                }
+            );
+
+        }
+
+
+        // =========================
+        // 新增估價單
+        // =========================
+
+        newQuotationButton.addEventListener(
+            "click",
+            function() {
+
+                // 請使用者輸入工程名稱
+                const name =
+                    prompt(
+                        "請輸入工程名稱"
+                    );
+
+
+                // 如果沒有輸入
+                if (!name) {
+
+                    return;
+
+                }
+
+
+                // 建立新的估價單 ID
+                const id =
+                    Date.now().toString();
+
+
+                // 建立今天日期
+                const date =
+                    new Date()
+                        .toLocaleDateString(
+                            "zh-TW"
+                        );
+
+
+                // 建立估價單
+                const quotation = {
+
+                    id: id,
+
+                    name: name,
+
+                    date: date
+
+                };
+
+
+                // 加入估價單列表
+                quotations.push(
+                    quotation
+                );
+
+
+                // 儲存估價單列表
+                localStorage.setItem(
+                    "quotations",
+                    JSON.stringify(
+                        quotations
+                    )
+                );
+
+
+                // 直接開啟新的估價單
+                openQuotation(
+                    quotations.length - 1
+                );
+
+            }
+        );
+
+
+        // =========================
+        // 開啟估價單
+        // =========================
+
+        function openQuotation(index) {
+
+            const quotation =
+                quotations[index];
+
+
+            // 把目前估價單 ID
+            // 存到瀏覽器
+            localStorage.setItem(
+                "currentQuotationId",
+                quotation.id
+            );
+
+
+            // 前往估價單
+            window.location.href =
+                "index.html";
+
+        }
+
+
+        // =========================
+        // 刪除估價單
+        // =========================
+
+        function deleteQuotation(index) {
+
+            // 確認是否刪除
+            const confirmDelete =
+                confirm(
+                    "確定要刪除這張估價單嗎？"
+                );
+
+
+            if (!confirmDelete) {
+
+                return;
+
+            }
+
+
+            // 取得估價單
+            const quotation =
+                quotations[index];
+
+
+            // 刪除估價單
+            quotations.splice(
+                index,
+                1
+            );
+
+
+            // 更新估價單列表
+            localStorage.setItem(
+                "quotations",
+                JSON.stringify(
+                    quotations
+                )
+            );
+
+
+            // 刪除這張估價單的內容
+            localStorage.removeItem(
+                "quotation_" +
+                quotation.id
+            );
+
+
+            // 重新顯示
+            displayQuotations();
+
+        }
+
+
+        // =========================
+        // 網頁載入時
+        // =========================
+
+        displayQuotations();
+
+    </script>
+
+</body>
+
+</html>
