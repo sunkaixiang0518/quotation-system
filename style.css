@@ -2,26 +2,21 @@ body {
     font-family: Arial, "Microsoft JhengHei", sans-serif;
     background-color: #f5f5f5;
     margin: 0;
-    padding: 5px 30px;
+    padding: 10px 30px;
 }
-
-
 
 .info {
     margin-bottom: 20px;
 }
 
-
 .info label {
     margin-right: 30px;
 }
-
 
 input {
     padding: 6px;
     font-size: 16px;
 }
-
 
 table {
     width: 100%;
@@ -29,25 +24,21 @@ table {
     background-color: white;
 }
 
-
 th,
 td {
     border: 1px solid #999;
-    padding: 4px;
+    padding: 6px;
     text-align: center;
 }
-
 
 th {
     background-color: #eeeeee;
 }
 
-
 td input {
     width: 90%;
     box-sizing: border-box;
 }
-
 
 button {
     margin-top: 20px;
@@ -56,12 +47,10 @@ button {
     cursor: pointer;
 }
 
-
 h2 {
     text-align: right;
     margin-top: 30px;
 }
-
 
 /* 材料搜尋下拉選單 */
 
@@ -78,7 +67,6 @@ h2 {
     overflow: hidden;
 }
 
-
 /* 搜尋結果 */
 
 .materialSuggestions div {
@@ -87,13 +75,11 @@ h2 {
     border-bottom: 1px solid #eee;
 }
 
-
 /* 最後一個搜尋結果不要底線 */
 
 .materialSuggestions div:last-child {
     border-bottom: none;
 }
-
 
 /* 滑鼠移過去 */
 
@@ -101,13 +87,11 @@ h2 {
     background-color: #f2f2f2 !important;
 }
 
-
 /* 暫時隱藏材料管理 */
 
 .material-manager {
     display: none;
 }
-
 
 /* =========================
    PDF / 列印專用版面
@@ -121,14 +105,13 @@ h2 {
         display: none !important;
     }
 
-
-    /* 隱藏新增材料、匯出 PDF */
+    /* 隱藏新增材料、儲存估價單、匯出 PDF */
 
     #addRow,
+    #saveQuotation,
     #printQuotation {
         display: none !important;
     }
-
 
     /* 隱藏操作欄 */
 
@@ -137,20 +120,17 @@ h2 {
         display: none !important;
     }
 
-
     /* 隱藏刪除按鈕 */
 
     .deleteRow {
         display: none !important;
     }
 
-
     /* 隱藏搜尋下拉選單 */
 
     .materialSuggestions {
         display: none !important;
     }
-
 
     /* 不顯示輸入框的外框 */
 
@@ -160,20 +140,17 @@ h2 {
         background: transparent;
     }
 
-
     /* 讓估價單標題置中 */
 
     h1 {
         text-align: center;
     }
 
-
     /* 合計 */
 
     h2 {
         text-align: right;
     }
-
 
     /* 表格 */
 
@@ -182,11 +159,10 @@ h2 {
         border-collapse: collapse;
     }
 
-
     th,
     td {
         border: 1px solid #000;
-        padding: 2px;
+        padding: 8px;
     }
 
 }
