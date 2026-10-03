@@ -13,55 +13,63 @@
     
     <div class="material-manager">
 
-    <h2>材料管理</h2>
+        <h2>材料管理</h2>
 
-    <input
-        type="text"
-        id="materialName"
-        placeholder="材料名稱"
-    >
-
-    <input
-        type="text"
-        id="materialSpec"
-        placeholder="規格"
-    >
-
-    <input
-        type="number"
-        id="materialPrice"
-        placeholder="單價"
-    >
-
-    <button id="saveMaterial">
-        儲存材料
-    </button>
-
-```html
-<div class="info">
-
-    <label>
-        工程名稱：
-        <input type="text" id="projectName">
-    </label>
-
-    <label>
-        日期：
-        <input type="date" id="projectDate">
-    </label>
-
-    <label>
-        地址：
         <input
             type="text"
-            id="projectAddress"
-            placeholder="請輸入工程地址"
+            id="materialName"
+            placeholder="材料名稱"
         >
-    </label>
 
-</div>
-```
+        <input
+            type="text"
+            id="materialSpec"
+            placeholder="規格"
+        >
 
+        <input
+            type="number"
+            id="materialPrice"
+            placeholder="單價"
+        >
+
+        <button id="saveMaterial">
+            儲存材料
+        </button>
+
+    </div>
+
+
+    <!-- 工程基本資料 -->
+
+    <div class="info">
+
+        <label>
+            工程名稱：
+            <input
+                type="text"
+                id="projectName"
+            >
+        </label>
+
+        <label>
+            日期：
+            <input
+                type="date"
+                id="projectDate"
+            >
+        </label>
+
+        <label>
+            地址：
+            <input
+                type="text"
+                id="projectAddress"
+                placeholder="請輸入工程地址"
+            >
+        </label>
+
+    </div>
 
 
     <table>
@@ -69,83 +77,130 @@
         <thead>
 
             <tr>
-    <th>品名</th>
-    <th>規格</th>
-    <th>數量</th>
-    <th>單價</th>
-    <th>金額</th>
-    <th>備註</th>
-    <th class="operation-column">操作</th>
-</tr>
+
+                <th>品名</th>
+
+                <th>規格</th>
+
+                <th>數量</th>
+
+                <th>單價</th>
+
+                <th>金額</th>
+
+                <th>備註</th>
+
+                <th class="operation-column">操作</th>
+
+            </tr>
 
         </thead>
 
 
         <tbody id="materialTable">
 
-    <tr>
+            <tr>
 
-       <td style="position: relative;">
-    <input type="text" class="name">
+                <td style="position: relative;">
 
-    <div class="materialSuggestions"></div>
-</td>
+                    <input
+                        type="text"
+                        class="name"
+                    >
 
-        <td>
-            <input type="text" class="spec">
-        </td>
+                    <div class="materialSuggestions"></div>
 
-        <td>
-            <input type="number" class="quantity">
-        </td>
+                </td>
 
-        <td>
-            <input type="number" class="price">
-        </td>
+                <td>
 
-        <td>
-            <input type="number" class="amount" readonly>
-        </td>
+                    <input
+                        type="text"
+                        class="spec"
+                    >
 
-        <td>
-            <input type="text" class="remark">
-        </td>
+                </td>
 
-        <td class="operation-column">
-    <button class="deleteRow">刪除</button>
-</td>
+                <td>
 
-    </tr>
+                    <input
+                        type="number"
+                        class="quantity"
+                    >
 
-</tbody>
+                </td>
+
+                <td>
+
+                    <input
+                        type="number"
+                        class="price"
+                    >
+
+                </td>
+
+                <td>
+
+                    <input
+                        type="number"
+                        class="amount"
+                        readonly
+                    >
+
+                </td>
+
+                <td>
+
+                    <input
+                        type="text"
+                        class="remark"
+                    >
+
+                </td>
+
+                <td class="operation-column">
+
+                    <button class="deleteRow">
+                        刪除
+                    </button>
+
+                </td>
+
+            </tr>
+
+        </tbody>
 
     </table>
 
 
-<button id="addRow">＋ 新增材料</button>
+    <button id="addRow">
+        ＋ 新增材料
+    </button>
 
-<!-- 儲存目前估價單 -->
 
-<button id="saveQuotation">
-    💾 儲存估價單
-</button>
+    <!-- 儲存目前估價單 -->
 
-<button id="printQuotation">
-    匯出 PDF
-</button>
+    <button id="saveQuotation">
+        💾 儲存估價單
+    </button>
+
+
+    <button id="printQuotation">
+        匯出 PDF
+    </button>
 
 
     <h2>
+
         合計：
         <span id="totalAmount">0</span>
         元
+
     </h2>
+
 
     <script src="app.js"></script>
 
 </body>
 
 </html>
-
-
-```
