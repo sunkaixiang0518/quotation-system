@@ -1,3 +1,4 @@
+```javascript
 // =========================
 // 從材料資料庫取得材料資料
 // =========================
@@ -56,6 +57,18 @@ const addRowButton =
 // 取得匯出 PDF 按鈕
 const printQuotationButton =
     document.getElementById("printQuotation");
+
+// 取得儲存估價單按鈕
+const saveQuotationButton =
+    document.getElementById("saveQuotation");
+
+// 取得工程名稱輸入框
+const projectNameInput =
+    document.getElementById("projectName");
+
+// 取得工程日期輸入框
+const projectDateInput =
+    document.getElementById("projectDate");
 
 
 // =========================
@@ -130,6 +143,11 @@ function saveQuotation() {
 
     const quotation = [];
 
+
+    // =========================
+    // 儲存每一筆材料
+    // =========================
+
     rows.forEach(function(row) {
 
         quotation.push({
@@ -150,6 +168,10 @@ function saveQuotation() {
             price:
                 row.querySelector(".price").value,
 
+            // 儲存金額
+            amount:
+                row.querySelector(".amount").value,
+
             // 儲存備註
             remark:
                 row.querySelector(".remark").value
@@ -158,13 +180,35 @@ function saveQuotation() {
 
     });
 
+
+    // =========================
+    // 建立完整的估價單資料
+    // =========================
+
+    const quotationData = {
+
+        // 儲存工程名稱
+        projectName:
+            projectNameInput.value,
+
+        // 儲存工程日期
+        projectDate:
+            projectDateInput.value,
+
+        // 儲存材料資料
+        materials:
+            quotation
+
+    };
+
+
     // =========================
     // 儲存到目前估價單自己的位置
     // =========================
 
     localStorage.setItem(
         quotationStorageKey,
-        JSON.stringify(quotation)
+        JSON.stringify(quotationData)
     );
 
 }
@@ -544,15 +588,47 @@ function addRow() {
 
 function loadQuotation() {
 
-    const quotation =
+    const savedData =
         JSON.parse(
             localStorage.getItem(
                 quotationStorageKey
             )
-        ) || [];
+        );
 
 
     // 如果沒有儲存過估價單
+    if (!savedData) {
+
+        return;
+
+    }
+
+
+    // =========================
+    // 恢復工程名稱
+    // =========================
+
+    projectNameInput.value =
+        savedData.projectName || "";
+
+
+    // =========================
+    // 恢復工程日期
+    // =========================
+
+    projectDateInput.value =
+        savedData.projectDate || "";
+
+
+    // =========================
+    // 取得材料資料
+    // =========================
+
+    const quotation =
+        savedData.materials || [];
+
+
+    // 如果沒有材料
     if (quotation.length === 0) {
 
         return;
@@ -747,29 +823,24 @@ addRowButton.addEventListener(
 
 
 // =========================
-// 按下「匯出 PDF」
+// 按下「💾 儲存估價單」
 // =========================
 
-printQuotationButton.addEventListener(
+saveQuotationButton.addEventListener(
     "click",
     function() {
 
-        window.print();
+        // 儲存目前估價單
+        saveQuotation();
+
+        // 顯示儲存成功訊息
+        alert("估價單儲存成功！");
 
     }
 );
 
 
 // =========================
-// 網頁載入時
-// 載入之前儲存的估價單
-// =========================
-
-loadQuotation();
-
-
-// =========================
-// 網頁載入後重新計算總金額
-// =========================
-
-calculateTotal();
+// 工程名稱修改時
+// =======
+```
