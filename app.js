@@ -1,4 +1,3 @@
-```javascript
 // =========================
 // 從材料資料庫取得材料資料
 // =========================
@@ -69,7 +68,7 @@ const projectNameInput =
 // 取得工程日期輸入框
 const projectDateInput =
     document.getElementById("projectDate");
-    
+
 // 取得工程地址輸入框
 const projectAddressInput =
     document.getElementById("projectAddress");
@@ -200,8 +199,8 @@ function saveQuotation() {
             projectDateInput.value,
 
         // 儲存工程地址
-projectAddress:
-    projectAddressInput.value,
+        projectAddress:
+            projectAddressInput.value,
 
         // 儲存材料資料
         materials:
@@ -279,6 +278,9 @@ function setupRow(row) {
 
             // 如果沒有輸入文字
             if (keyword === "") {
+
+                // 儲存目前資料
+                saveQuotation();
 
                 return;
 
@@ -627,12 +629,13 @@ function loadQuotation() {
     projectDateInput.value =
         savedData.projectDate || "";
 
-    // =========================
-// 恢復工程地址
-// =========================
 
-projectAddressInput.value =
-    savedData.projectAddress || "";
+    // =========================
+    // 恢復工程地址
+    // =========================
+
+    projectAddressInput.value =
+        savedData.projectAddress || "";
 
 
     // =========================
@@ -678,6 +681,7 @@ projectAddressInput.value =
         firstRow.querySelector(".remark").value =
             quotation[0].remark || "";
 
+        // 重新計算金額
         calculateRow(firstRow);
 
     }
@@ -857,5 +861,74 @@ saveQuotationButton.addEventListener(
 
 // =========================
 // 工程名稱修改時
-// =======
-```
+// =========================
+
+projectNameInput.addEventListener(
+    "input",
+    function() {
+
+        // 儲存工程名稱
+        saveQuotation();
+
+    }
+);
+
+
+// =========================
+// 工程日期修改時
+// =========================
+
+projectDateInput.addEventListener(
+    "input",
+    function() {
+
+        // 儲存工程日期
+        saveQuotation();
+
+    }
+);
+
+
+// =========================
+// 工程地址修改時
+// =========================
+
+projectAddressInput.addEventListener(
+    "input",
+    function() {
+
+        // 儲存工程地址
+        saveQuotation();
+
+    }
+);
+
+
+// =========================
+// 按下「匯出 PDF」
+// =========================
+
+printQuotationButton.addEventListener(
+    "click",
+    function() {
+
+        window.print();
+
+    }
+);
+
+
+// =========================
+// 網頁載入時
+// 載入之前儲存的估價單
+// =========================
+
+loadQuotation();
+
+
+// =========================
+// 網頁載入後重新計算總金額
+// =========================
+
+calculateTotal();
+
