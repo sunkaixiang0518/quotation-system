@@ -21,6 +21,27 @@ function loadMaterials() {
 
 
 // =========================
+// 取得目前正在使用的估價單 ID
+// =========================
+
+// 從瀏覽器取得目前估價單 ID
+const currentQuotationId =
+    localStorage.getItem(
+        "currentQuotationId"
+    );
+
+
+// =========================
+// 建立目前估價單專用的儲存名稱
+// =========================
+
+// 每一張估價單都有自己的 localStorage 名稱
+const quotationStorageKey =
+    "quotation_" +
+    currentQuotationId;
+
+
+// =========================
 // 取得 HTML 元素
 // =========================
 
@@ -44,14 +65,20 @@ const printQuotationButton =
 function calculateRow(row) {
 
     const quantity =
-        Number(row.querySelector(".quantity").value) || 0;
+        Number(
+            row.querySelector(".quantity").value
+        ) || 0;
 
     const price =
-        Number(row.querySelector(".price").value) || 0;
+        Number(
+            row.querySelector(".price").value
+        ) || 0;
 
-    const amount = quantity * price;
+    const amount =
+        quantity * price;
 
-    row.querySelector(".amount").value = amount;
+    row.querySelector(".amount").value =
+        amount;
 
     // 重新計算總金額
     calculateTotal();
@@ -66,14 +93,18 @@ function calculateRow(row) {
 function calculateTotal() {
 
     const rows =
-        document.querySelectorAll("#materialTable tr");
+        document.querySelectorAll(
+            "#materialTable tr"
+        );
 
     let total = 0;
 
     rows.forEach(function(row) {
 
         const amount =
-            Number(row.querySelector(".amount").value) || 0;
+            Number(
+                row.querySelector(".amount").value
+            ) || 0;
 
         total += amount;
 
@@ -93,7 +124,9 @@ function calculateTotal() {
 function saveQuotation() {
 
     const rows =
-        document.querySelectorAll("#materialTable tr");
+        document.querySelectorAll(
+            "#materialTable tr"
+        );
 
     const quotation = [];
 
@@ -125,9 +158,12 @@ function saveQuotation() {
 
     });
 
-    // 儲存到瀏覽器
+    // =========================
+    // 儲存到目前估價單自己的位置
+    // =========================
+
     localStorage.setItem(
-        "quotation",
+        quotationStorageKey,
         JSON.stringify(quotation)
     );
 
@@ -162,7 +198,9 @@ function setupRow(row) {
 
     // 取得材料搜尋結果區域
     const suggestionBox =
-        row.querySelector(".materialSuggestions");
+        row.querySelector(
+            ".materialSuggestions"
+        );
 
     // 取得刪除按鈕
     const deleteButton =
@@ -200,70 +238,76 @@ function setupRow(row) {
             // =========================
 
             const results =
-                materials.filter(function(item) {
+                materials.filter(
+                    function(item) {
 
-                    return item.name.includes(
-                        keyword
-                    );
+                        return item.name.includes(
+                            keyword
+                        );
 
-                });
+                    }
+                );
 
 
             // =========================
             // 顯示材料選項
             // =========================
 
-            results.forEach(function(item) {
+            results.forEach(
+                function(item) {
 
-                const suggestion =
-                    document.createElement("div");
+                    const suggestion =
+                        document.createElement(
+                            "div"
+                        );
 
-                // 顯示材料名稱和價格
-                suggestion.textContent =
-                    item.name +
-                    "  $" +
-                    item.price;
+                    // 顯示材料名稱和價格
+                    suggestion.textContent =
+                        item.name +
+                        "  $" +
+                        item.price;
 
 
-                // =========================
-                // 點選材料
-                // =========================
+                    // =========================
+                    // 點選材料
+                    // =========================
 
-                suggestion.addEventListener(
-                    "click",
-                    function() {
+                    suggestion.addEventListener(
+                        "click",
+                        function() {
 
-                        // 填入材料名稱
-                        nameInput.value =
-                            item.name;
+                            // 填入材料名稱
+                            nameInput.value =
+                                item.name;
 
-                        // 填入規格
-                        specInput.value =
-                            item.spec;
+                            // 填入規格
+                            specInput.value =
+                                item.spec;
 
-                        // 填入單價
-                        priceInput.value =
-                            item.price;
+                            // 填入單價
+                            priceInput.value =
+                                item.price;
 
-                        // 清除搜尋結果
-                        suggestionBox.innerHTML =
-                            "";
+                            // 清除搜尋結果
+                            suggestionBox.innerHTML =
+                                "";
 
-                        // 計算金額
-                        calculateRow(row);
+                            // 計算金額
+                            calculateRow(row);
 
-                        // 儲存估價單
-                        saveQuotation();
+                            // 儲存估價單
+                            saveQuotation();
 
-                    }
-                );
+                        }
+                    );
 
-                // 加入搜尋結果
-                suggestionBox.appendChild(
-                    suggestion
-                );
+                    // 加入搜尋結果
+                    suggestionBox.appendChild(
+                        suggestion
+                    );
 
-            });
+                }
+            );
 
 
             // =========================
@@ -272,12 +316,14 @@ function setupRow(row) {
             // =========================
 
             const material =
-                materials.find(function(item) {
+                materials.find(
+                    function(item) {
 
-                    return item.name ===
-                        keyword;
+                        return item.name ===
+                            keyword;
 
-                });
+                    }
+                );
 
 
             if (material) {
@@ -500,7 +546,9 @@ function loadQuotation() {
 
     const quotation =
         JSON.parse(
-            localStorage.getItem("quotation")
+            localStorage.getItem(
+                quotationStorageKey
+            )
         ) || [];
 
 
@@ -640,12 +688,14 @@ window.addEventListener(
 
             // 找到材料資料庫中的材料
             const material =
-                materials.find(function(item) {
+                materials.find(
+                    function(item) {
 
-                    return item.name ===
-                        nameInput.value;
+                        return item.name ===
+                            nameInput.value;
 
-                });
+                    }
+                );
 
 
             // 如果找到
