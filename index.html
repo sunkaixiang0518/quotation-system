@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 
@@ -43,12 +44,12 @@
 
         <label>
             工程名稱：
-            <input type="text">
+            <input type="text" id="projectName">
         </label>
 
         <label>
             日期：
-            <input type="date">
+            <input type="date" id="projectDate">
         </label>
 
     </div>
@@ -114,6 +115,12 @@
 
 <button id="addRow">＋ 新增材料</button>
 
+<!-- 儲存目前估價單 -->
+
+<button id="saveQuotation">
+    💾 儲存估價單
+</button>
+
 <button id="printQuotation">
     匯出 PDF
 </button>
@@ -128,4 +135,6 @@
 </body>
 
 </html>
+
 <script src="app.js"></script>
+```
