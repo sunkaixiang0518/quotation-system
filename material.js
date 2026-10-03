@@ -1,11 +1,25 @@
+```javascript
 // =========================
-// 從 localStorage 取得材料資料
+// Supabase 雲端資料庫設定
 // =========================
 
-let materials = JSON.parse(
-    localStorage.getItem("materials")
-) || [];
+// Supabase 專案網址
+const SUPABASE_URL =
+    "https://ilplovmomqblgqopihce.supabase.co";
 
+// Supabase anon API Key
+// 請把你自己的 anon key 貼在下面的引號裡
+const SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscGxvdm1vbXFibGdxb3BpaGNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxMjEsImV4cCI6MjEwNjYwOTEyMX0.GzszzXgUmF_Jq2dDH9QI61zUGuiy968ufzZM3H2qGoU";
+
+// =========================
+// Supabase API 網址
+// =========================
+
+// materials 資料表的 API 網址
+const MATERIALS_API =
+    SUPABASE_URL +
+    "/rest/v1/materials";
 
 // =========================
 // 取得 HTML 元素
@@ -31,353 +45,167 @@ const saveMaterialButton =
 const materialTable =
     document.getElementById("materialTable");
 
-
 // =========================
 // 目前正在編輯的材料
 // =========================
 
 // -1 代表目前不是編輯狀態
-let editingIndex = -1;
+let editingId = null;
 
+// =========================
+// Supabase Request Headers
+// =========================
+
+// 建立 Supabase API 要使用的標頭
+function getHeaders() {
+
+    return {
+
+        // API Key
+        "apikey": SUPABASE_KEY,
+
+        // Authorization
+        "Authorization":
+            "Bearer " + SUPABASE_KEY,
+
+        // 告訴 Supabase 我們傳送的是 JSON
+        "Content-Type":
+            "application/json"
+
+    };
+
+}
+
+// =========================
+// 從 Supabase 取得所有材料
+// =========================
+
+async function loadMaterials() {
+
+    try {
+
+        // 向 Supabase 要求材料資料
+        const response =
+            await fetch(
+                MATERIALS_API +
+                "?select=*&order=id.asc",
+                {
+
+                    method: "GET",
+
+                    headers:
+                        getHeaders()
+
+                }
+            );
+
+        // 如果取得資料失敗
+        if (!response.ok) {
+
+            throw new Error(
+                "無法取得材料資料"
+            );
+
+        }
+
+        // 將資料轉成 JavaScript
+        const materials =
+            await response.json();
+
+        // 顯示材料
+        displayMaterials(
+            materials
+        );
+
+    }
+
+    catch (error) {
+
+        // 顯示錯誤
+        console.error(
+            "取得材料失敗：",
+            error
+        );
+
+        alert(
+            "無法取得雲端材料資料，請檢查 Supabase 設定。"
+        );
+
+    }
+
+}
 
 // =========================
 // 顯示所有材料
 // =========================
 
-function displayMaterials() {
+function displayMaterials(
+    materials
+) {
 
     // 先清空原本的材料列表
     materialTable.innerHTML = "";
 
-
     // 一個一個讀取材料
-    materials.forEach(function(item, index) {
+    materials.forEach(
+        function(item) {
 
-        // 建立一列
-        const row = document.createElement("tr");
+            // 建立一列
+            const row =
+                document.createElement(
+                    "tr"
+                );
 
+            // 建立這一列的內容
+            row.innerHTML = `
 
-        // 建立這一列的內容
-        row.innerHTML = `
+                <td>
+                    ${item.name}
+                </td>
 
-            <td>
-                ${item.name}
-            </td>
+                <td>
+                    ${item.spec || ""}
+                </td>
 
-            <td>
-                ${item.spec}
-            </td>
+                <td>
+                    $${item.price}
+                </td>
 
-            <td>
-                $${item.price}
-            </td>
+                <td>
 
-            <td>
+                    <button
+                        class="editMaterial"
+                        data-id="${item.id}"
+                    >
+                        編輯
+                    </button>
 
-                <button
-                    class="editMaterial"
-                    data-index="${index}"
-                >
-                    編輯
-                </button>
+                    <button
+                        class="deleteMaterial"
+                        data-id="${item.id}"
+                    >
+                        刪除
+                    </button>
 
-                <button
-                    class="deleteMaterial"
-                    data-index="${index}"
-                >
-                    刪除
-                </button>
+                </td>
 
-            </td>
+            `;
 
-        `;
+            // 把這一列加入材料列表
+            materialTable.appendChild(
+                row
+            );
 
-
-        // 把這一列加入材料列表
-        materialTable.appendChild(row);
-
-    });
-
+        }
+    );
 
     // 設定編輯按鈕
     setupEditButtons();
-
 
     // 設定刪除按鈕
     setupDeleteButtons();
 
 }
 
-
 // =========================
-// 設定編輯按鈕
-// =========================
-
-function setupEditButtons() {
-
-    // 找到所有編輯按鈕
-    const editButtons =
-        document.querySelectorAll(".editMaterial");
-
-
-    // 一個一個設定
-    editButtons.forEach(function(button) {
-
-        button.addEventListener("click", function() {
-
-            // 取得這個材料的位置
-            const index =
-                Number(button.dataset.index);
-
-
-            // 取得要編輯的材料
-            const material =
-                materials[index];
-
-
-            // 把材料資料放回輸入框
-            materialNameInput.value =
-                material.name;
-
-            materialSpecInput.value =
-                material.spec;
-
-            materialPriceInput.value =
-                material.price;
-
-
-            // 記住目前正在編輯哪一筆材料
-            editingIndex = index;
-
-
-            // 修改按鈕文字
-            saveMaterialButton.textContent =
-                "儲存修改";
-
-        });
-
-    });
-
-}
-
-
-// =========================
-// 設定刪除按鈕
-// =========================
-
-function setupDeleteButtons() {
-
-    // 找到所有刪除按鈕
-    const deleteButtons =
-        document.querySelectorAll(".deleteMaterial");
-
-
-    // 一個一個設定
-    deleteButtons.forEach(function(button) {
-
-        button.addEventListener("click", function() {
-
-            // 取得這個材料的位置
-            const index =
-                Number(button.dataset.index);
-
-
-            // 確認是否真的要刪除
-            const confirmDelete =
-                confirm("確定要刪除這個材料嗎？");
-
-
-            // 如果按取消
-            if (!confirmDelete) {
-
-                return;
-
-            }
-
-
-            // 從材料陣列刪除
-            materials.splice(index, 1);
-
-
-            // 更新 localStorage
-            localStorage.setItem(
-                "materials",
-                JSON.stringify(materials)
-            );
-
-
-            // 重新顯示材料
-            displayMaterials();
-
-        });
-
-    });
-
-}
-
-
-// =========================
-// 儲存材料
-// =========================
-
-saveMaterialButton.addEventListener(
-    "click",
-    function() {
-
-        // 取得材料名稱
-        const name =
-            materialNameInput.value.trim();
-
-
-        // 取得材料規格
-        const spec =
-            materialSpecInput.value.trim();
-
-
-        // 取得材料單價
-        const price =
-            Number(materialPriceInput.value);
-
-
-        // =========================
-        // 檢查材料名稱
-        // =========================
-
-        if (name === "") {
-
-            alert("請輸入材料名稱");
-
-            return;
-
-        }
-
-
-        // =========================
-        // 檢查材料單價
-        // =========================
-
-        if (price <= 0) {
-
-            alert("請輸入正確的單價");
-
-            return;
-
-        }
-
-
-        // =========================
-        // 編輯材料
-        // =========================
-
-        if (editingIndex !== -1) {
-
-            // 修改原本的材料
-            materials[editingIndex] = {
-
-                name: name,
-
-                spec: spec,
-
-                price: price
-
-            };
-
-
-            // 儲存修改後的資料
-            localStorage.setItem(
-                "materials",
-                JSON.stringify(materials)
-            );
-
-
-            // 清空輸入框
-            materialNameInput.value = "";
-
-            materialSpecInput.value = "";
-
-            materialPriceInput.value = "";
-
-
-            // 結束編輯狀態
-            editingIndex = -1;
-
-
-            // 恢復按鈕文字
-            saveMaterialButton.textContent =
-                "儲存材料";
-
-
-            // 更新材料列表
-            displayMaterials();
-
-
-            alert("材料修改成功！");
-
-            return;
-
-        }
-
-
-        // =========================
-        // 建立新材料
-        // =========================
-
-        const material = {
-
-            name: name,
-
-            spec: spec,
-
-            price: price
-
-        };
-
-
-        // =========================
-        // 加入材料
-        // =========================
-
-        materials.push(material);
-
-
-        // =========================
-        // 儲存到 localStorage
-        // =========================
-
-        localStorage.setItem(
-            "materials",
-            JSON.stringify(materials)
-        );
-
-
-        // =========================
-        // 清空輸入框
-        // =========================
-
-        materialNameInput.value = "";
-
-        materialSpecInput.value = "";
-
-        materialPriceInput.value = "";
-
-
-        // =========================
-        // 更新材料列表
-        // =========================
-
-        displayMaterials();
-
-
-        // 顯示成功訊息
-        alert("材料儲存成功！");
-
-    }
-);
-
-
-// =========================
-// 網頁載入時
-// 顯示目前所有材料
-// =========================
-
-displayMaterials();
+// 設
