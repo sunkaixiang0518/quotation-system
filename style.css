@@ -2,7 +2,7 @@ body {
     font-family: Arial, "Microsoft JhengHei", sans-serif;
     background-color: #f5f5f5;
     margin: 0;
-    padding: 10px 30px;
+    padding: 5px 30px;
 }
 
 
@@ -33,7 +33,7 @@ table {
 th,
 td {
     border: 1px solid #999;
-    padding: 6px;
+    padding: 4px;
     text-align: center;
 }
 
@@ -186,7 +186,7 @@ h2 {
     th,
     td {
         border: 1px solid #000;
-        padding: 8px;
+        padding: 4px;
     }
 
 }
