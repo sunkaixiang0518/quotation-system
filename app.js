@@ -1,21 +1,123 @@
 // =========================
+// Supabase 雲端資料庫設定
+// =========================
+
+// Supabase 專案網址
+const SUPABASE_URL =
+    "https://ilplovmomqblgqopihce.supabase.co";
+
+// Supabase anon public key
+// 請把你自己的 anon public key 貼在下面的引號裡
+const SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscGxvdm1vbXFibGdxb3BpaGNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxMjEsImV4cCI6MjEwNjYwOTEyMX0.GzszzXgUmF_Jq2dDH9QI61zUGuiy968ufzZM3H2qGoU";
+
+// =========================
+// Supabase API 網址
+// =========================
+
+// materials 資料表的 API 網址
+const MATERIALS_API =
+    SUPABASE_URL + "/rest/v1/materials";
+
+
+// =========================
 // 從材料資料庫取得材料資料
 // =========================
 
-let materials = JSON.parse(
-    localStorage.getItem("materials")
-) || [];
+// 儲存目前從 Supabase 取得的材料
+let materials = [];
+
+
+// =========================
+// 建立 Supabase Request Headers
+// =========================
+
+// 建立 Supabase API 要使用的標頭
+function getHeaders() {
+
+    return {
+
+        // Supabase API Key
+        "apikey":
+            SUPABASE_KEY,
+
+        // Authorization
+        "Authorization":
+            "Bearer " + SUPABASE_KEY,
+
+        // 告訴 Supabase 傳送的是 JSON
+        "Content-Type":
+            "application/json"
+
+    };
+
+}
 
 
 // =========================
 // 重新取得最新材料資料
 // =========================
 
-function loadMaterials() {
+// 從 Supabase 取得最新材料
+async function loadMaterials() {
 
-    materials = JSON.parse(
-        localStorage.getItem("materials")
-    ) || [];
+    try {
+
+        // 向 Supabase 取得所有材料
+        const response =
+            await fetch(
+                MATERIALS_API +
+                "?select=*&order=id.asc",
+                {
+                    method: "GET",
+                    headers: getHeaders()
+                }
+            );
+
+
+        // 如果取得失敗
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            console.error(
+                "Supabase 材料資料錯誤：",
+                errorText
+            );
+
+            throw new Error(
+                errorText
+            );
+
+        }
+
+
+        // 將 Supabase 回傳資料轉成 JavaScript
+        materials =
+            await response.json();
+
+
+        // 顯示目前取得的材料數量
+        console.log(
+            "已取得材料數量：",
+            materials.length
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "取得雲端材料失敗：",
+            error
+        );
+
+        // 材料資料取得失敗時
+        // 不讓整個估價單停止運作
+        materials = [];
+
+    }
 
 }
 
@@ -227,6 +329,14 @@ function saveQuotation() {
 
 function setupRow(row) {
 
+    // 如果沒有這一列就停止
+    if (!row) {
+
+        return;
+
+    }
+
+
     // 取得品名輸入框
     const nameInput =
         row.querySelector(".name");
@@ -266,15 +376,13 @@ function setupRow(row) {
         "input",
         function() {
 
-            // 每次輸入時取得最新材料資料
-            loadMaterials();
-
             // 取得輸入的文字
             const keyword =
                 nameInput.value.trim();
 
             // 清空舊的搜尋結果
             suggestionBox.innerHTML = "";
+
 
             // 如果沒有輸入文字
             if (keyword === "") {
@@ -295,9 +403,12 @@ function setupRow(row) {
                 materials.filter(
                     function(item) {
 
-                        return item.name.includes(
-                            keyword
-                        );
+                        // 材料名稱包含搜尋文字
+                        return item.name
+                            .toLowerCase()
+                            .includes(
+                                keyword.toLowerCase()
+                            );
 
                     }
                 );
@@ -314,6 +425,7 @@ function setupRow(row) {
                         document.createElement(
                             "div"
                         );
+
 
                     // 顯示材料名稱和價格
                     suggestion.textContent =
@@ -336,7 +448,7 @@ function setupRow(row) {
 
                             // 填入規格
                             specInput.value =
-                                item.spec;
+                                item.spec || "";
 
                             // 填入單價
                             priceInput.value =
@@ -354,6 +466,7 @@ function setupRow(row) {
 
                         }
                     );
+
 
                     // 加入搜尋結果
                     suggestionBox.appendChild(
@@ -384,7 +497,7 @@ function setupRow(row) {
 
                 // 自動帶出規格
                 specInput.value =
-                    material.spec;
+                    material.spec || "";
 
                 // 自動帶出單價
                 priceInput.value =
@@ -740,79 +853,71 @@ function loadQuotation() {
 // 自動更新估價單價格
 // =========================
 
-window.addEventListener(
-    "storage",
-    function(event) {
+// Supabase 不會使用原本的 storage 事件
+// 因此這裡改成重新從雲端取得材料資料
+async function refreshMaterials() {
 
-        // 確認更新的是材料資料
-        if (event.key !== "materials") {
+    // 重新取得最新材料
+    await loadMaterials();
+
+
+    // 取得估價單所有列
+    const rows =
+        document.querySelectorAll(
+            "#materialTable tr"
+        );
+
+
+    rows.forEach(function(row) {
+
+        // 取得品名
+        const nameInput =
+            row.querySelector(".name");
+
+        // 取得單價
+        const priceInput =
+            row.querySelector(".price");
+
+
+        // 沒有品名就跳過
+        if (nameInput.value === "") {
 
             return;
 
         }
 
-        // 重新取得最新材料
-        loadMaterials();
 
+        // 找到材料資料庫中的材料
+        const material =
+            materials.find(
+                function(item) {
 
-        // 取得估價單所有列
-        const rows =
-            document.querySelectorAll(
-                "#materialTable tr"
+                    return item.name ===
+                        nameInput.value;
+
+                }
             );
 
 
-        rows.forEach(function(row) {
+        // 如果找到
+        if (material) {
 
-            // 取得品名
-            const nameInput =
-                row.querySelector(".name");
+            // 更新單價
+            priceInput.value =
+                material.price;
 
-            // 取得單價
-            const priceInput =
-                row.querySelector(".price");
+            // 重新計算金額
+            calculateRow(row);
 
+        }
 
-            // 沒有品名就跳過
-            if (nameInput.value === "") {
-
-                return;
-
-            }
+    });
 
 
-            // 找到材料資料庫中的材料
-            const material =
-                materials.find(
-                    function(item) {
+    // 儲存更新後的估價單
+    saveQuotation();
 
-                        return item.name ===
-                            nameInput.value;
-
-                    }
-                );
-
-
-            // 如果找到
-            if (material) {
-
-                // 更新單價
-                priceInput.value =
-                    material.price;
-
-                // 重新計算金額
-                calculateRow(row);
-
-            }
-
-        });
-
-
-        // 儲存更新後的估價單
-        saveQuotation();
-
-    }
-);
+}
 
 
 // =========================
@@ -932,3 +1037,36 @@ loadQuotation();
 
 calculateTotal();
 
+
+// =========================
+// 網頁載入時
+// 從 Supabase 取得材料資料
+// =========================
+
+loadMaterials()
+    .then(
+        function() {
+
+            // 材料資料取得完成後
+            // 再次計算目前估價單
+            calculateTotal();
+
+        }
+    );
+
+
+// =========================
+// 定期重新取得雲端材料資料
+// =========================
+
+// 每 30 秒重新取得一次材料資料
+// 讓其他使用者新增材料後
+// 目前網頁也能取得最新資料
+setInterval(
+    function() {
+
+        refreshMaterials();
+
+    },
+    30000
+);
