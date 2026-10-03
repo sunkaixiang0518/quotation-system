@@ -69,6 +69,10 @@ const projectNameInput =
 // 取得工程日期輸入框
 const projectDateInput =
     document.getElementById("projectDate");
+    
+// 取得工程地址輸入框
+const projectAddressInput =
+    document.getElementById("projectAddress");
 
 
 // =========================
@@ -194,6 +198,10 @@ function saveQuotation() {
         // 儲存工程日期
         projectDate:
             projectDateInput.value,
+
+        // 儲存工程地址
+projectAddress:
+    projectAddressInput.value,
 
         // 儲存材料資料
         materials:
@@ -618,6 +626,13 @@ function loadQuotation() {
 
     projectDateInput.value =
         savedData.projectDate || "";
+
+    // =========================
+// 恢復工程地址
+// =========================
+
+projectAddressInput.value =
+    savedData.projectAddress || "";
 
 
     // =========================
