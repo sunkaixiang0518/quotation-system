@@ -31,10 +31,9 @@ const QUOTATION_ITEMS_API =
 
 
 // =========================
-// 從材料資料庫取得材料資料
+// 儲存材料資料
 // =========================
 
-// 儲存目前從 Supabase 取得的材料
 let materials = [];
 
 
@@ -42,7 +41,6 @@ let materials = [];
 // 建立 Supabase Request Headers
 // =========================
 
-// 建立 Supabase API 要使用的標頭
 function getHeaders() {
 
     return {
@@ -65,10 +63,9 @@ function getHeaders() {
 
 
 // =========================
-// 取得目前正在使用的估價單 ID
+// 取得目前估價單 ID
 // =========================
 
-// 從瀏覽器取得目前估價單 ID
 const currentQuotationId =
     localStorage.getItem(
         "currentQuotationId"
@@ -98,38 +95,90 @@ if (!currentQuotationId) {
 
 // 取得材料表格
 const materialTable =
-    document.getElementById("materialTable");
+    document.getElementById(
+        "materialTable"
+    );
 
 // 取得新增材料按鈕
 const addRowButton =
-    document.getElementById("addRow");
+    document.getElementById(
+        "addRow"
+    );
 
 // 取得匯出 PDF 按鈕
 const printQuotationButton =
-    document.getElementById("printQuotation");
+    document.getElementById(
+        "printQuotation"
+    );
 
 // 取得儲存估價單按鈕
 const saveQuotationButton =
-    document.getElementById("saveQuotation");
+    document.getElementById(
+        "saveQuotation"
+    );
 
 // 取得工程名稱輸入框
 const projectNameInput =
-    document.getElementById("projectName");
+    document.getElementById(
+        "projectName"
+    );
 
 // 取得工程日期輸入框
 const projectDateInput =
-    document.getElementById("projectDate");
+    document.getElementById(
+        "projectDate"
+    );
 
 // 取得工程地址輸入框
 const projectAddressInput =
-    document.getElementById("projectAddress");
+    document.getElementById(
+        "projectAddress"
+    );
+
+
+// =========================
+// 取得今天日期
+// =========================
+
+function getTodayDate() {
+
+    const today =
+        new Date();
+
+    const year =
+        today.getFullYear();
+
+    const month =
+        String(
+            today.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+    const day =
+        String(
+            today.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
 
 
 // =========================
 // 從 Supabase 取得材料
 // =========================
 
-// 從 Supabase 取得最新材料
 async function loadMaterials() {
 
     try {
@@ -169,7 +218,6 @@ async function loadMaterials() {
             await response.json();
 
 
-        // 顯示目前取得的材料數量
         console.log(
             "已取得材料數量：",
             materials.length
@@ -184,8 +232,6 @@ async function loadMaterials() {
             error
         );
 
-        // 材料資料取得失敗時
-        // 不讓整個估價單停止運作
         materials = [];
 
     }
@@ -199,21 +245,40 @@ async function loadMaterials() {
 
 function calculateRow(row) {
 
+    const quantityInput =
+        row.querySelector(
+            ".quantity"
+        );
+
+    const priceInput =
+        row.querySelector(
+            ".price"
+        );
+
+    const amountInput =
+        row.querySelector(
+            ".amount"
+        );
+
+
     const quantity =
         Number(
-            row.querySelector(".quantity").value
+            quantityInput.value
         ) || 0;
 
     const price =
         Number(
-            row.querySelector(".price").value
+            priceInput.value
         ) || 0;
+
 
     const amount =
         quantity * price;
 
-    row.querySelector(".amount").value =
+
+    amountInput.value =
         amount;
+
 
     // 重新計算總金額
     calculateTotal();
@@ -232,45 +297,64 @@ function calculateTotal() {
             "#materialTable tr"
         );
 
+
     let total = 0;
 
-    rows.forEach(function(row) {
 
-        const amountInput =
-            row.querySelector(".amount");
+    rows.forEach(
+        function(row) {
 
-        // 如果找不到金額欄位就跳過
-        if (!amountInput) {
+            const amountInput =
+                row.querySelector(
+                    ".amount"
+                );
 
-            return;
+
+            // 如果找不到金額欄位就跳過
+            if (!amountInput) {
+
+                return;
+
+            }
+
+
+            const amount =
+                Number(
+                    amountInput.value
+                ) || 0;
+
+
+            total += amount;
 
         }
+    );
 
-        const amount =
-            Number(
-                amountInput.value
-            ) || 0;
 
-        total += amount;
+    const totalAmount =
+        document.getElementById(
+            "totalAmount"
+        );
 
-    });
 
-    document.querySelector(
-        "#totalAmount"
-    ).textContent = total;
+    if (totalAmount) {
+
+        totalAmount.textContent =
+            total;
+
+    }
 
 }
 
 
 // =========================
-// 儲存估價單到 Supabase
+// 儲存估價單狀態
 // =========================
 
-// 避免同一時間重複儲存
 let savingQuotation = false;
 
-// 記錄是否有等待儲存的資料
 let savePending = false;
+
+let saveTimer = null;
 
 
 // =========================
@@ -282,7 +366,6 @@ async function saveQuotation() {
     // 如果目前正在儲存
     if (savingQuotation) {
 
-        // 記錄這次還需要再儲存
         savePending = true;
 
         return;
@@ -312,131 +395,172 @@ async function saveQuotation() {
         // 建立材料明細資料
         // =========================
 
-        rows.forEach(function(row) {
+        rows.forEach(
+            function(row) {
 
-            // 取得材料日期
-            const materialDate =
-                row.querySelector(
-                    ".materialDate"
-                ).value;
+                const materialDateInput =
+                    row.querySelector(
+                        ".materialDate"
+                    );
 
+                const nameInput =
+                    row.querySelector(
+                        ".name"
+                    );
 
-            const name =
-                row.querySelector(
-                    ".name"
-                ).value.trim();
+                const specInput =
+                    row.querySelector(
+                        ".spec"
+                    );
 
-
-            const spec =
-                row.querySelector(
-                    ".spec"
-                ).value.trim();
-
-
-            const quantity =
-                Number(
+                const quantityInput =
                     row.querySelector(
                         ".quantity"
-                    ).value
-                ) || 0;
+                    );
 
-
-            const price =
-                Number(
+                const priceInput =
                     row.querySelector(
                         ".price"
-                    ).value
-                ) || 0;
+                    );
 
-
-            const amount =
-                Number(
+                const amountInput =
                     row.querySelector(
                         ".amount"
-                    ).value
-                ) || 0;
+                    );
+
+                const remarkInput =
+                    row.querySelector(
+                        ".remark"
+                    );
 
 
-            const remark =
-                row.querySelector(
-                    ".remark"
-                ).value.trim();
+                // 如果欄位不存在就跳過
+                if (
+                    !nameInput ||
+                    !specInput ||
+                    !quantityInput ||
+                    !priceInput ||
+                    !amountInput ||
+                    !remarkInput
+                ) {
+
+                    return;
+
+                }
 
 
-            // =========================
-            // 如果整列都是空的
-            // 就不儲存這一列
-            // =========================
+                // 取得材料日期
+                const materialDate =
+                    materialDateInput
+                        ? materialDateInput.value
+                        : "";
 
-            if (
-                materialDate === "" &&
-                name === "" &&
-                spec === "" &&
-                quantity === 0 &&
-                price === 0 &&
-                remark === ""
-            ) {
 
-                return;
+                const name =
+                    nameInput.value.trim();
+
+
+                const spec =
+                    specInput.value.trim();
+
+
+                const quantity =
+                    Number(
+                        quantityInput.value
+                    ) || 0;
+
+
+                const price =
+                    Number(
+                        priceInput.value
+                    ) || 0;
+
+
+                const amount =
+                    Number(
+                        amountInput.value
+                    ) || 0;
+
+
+                const remark =
+                    remarkInput.value.trim();
+
+
+                // =========================
+                // 如果整列都是空的
+                // 就不儲存這一列
+                // =========================
+
+                if (
+                    materialDate === "" &&
+                    name === "" &&
+                    spec === "" &&
+                    quantity === 0 &&
+                    price === 0 &&
+                    remark === ""
+                ) {
+
+                    return;
+
+                }
+
+
+                // =========================
+                // 加入材料明細
+                // =========================
+
+                quotationItems.push({
+
+                    // 估價單 ID
+                    quotation_id:
+                        Number(
+                            currentQuotationId
+                        ),
+
+                    // 材料使用日期
+                    material_date:
+                        materialDate ||
+                        null,
+
+                    // 品名
+                    name:
+                        name,
+
+                    // 規格
+                    spec:
+                        spec,
+
+                    // 數量
+                    quantity:
+                        quantity,
+
+                    // 單價
+                    price:
+                        price,
+
+                    // 金額
+                    amount:
+                        amount,
+
+                    // 備註
+                    remark:
+                        remark
+
+                });
 
             }
-
-
-            // =========================
-            // 加入材料明細
-            // =========================
-
-            quotationItems.push({
-
-                // 估價單 ID
-                quotation_id:
-                    Number(
-                        currentQuotationId
-                    ),
-
-                // 材料使用日期
-                material_date:
-                    materialDate ||
-                    null,
-
-                // 品名
-                name:
-                    name,
-
-                // 規格
-                spec:
-                    spec,
-
-                // 數量
-                quantity:
-                    quantity,
-
-                // 單價
-                price:
-                    price,
-
-                // 金額
-                amount:
-                    amount,
-
-                // 備註
-                remark:
-                    remark
-
-            });
-
-        });
+        );
 
 
         // =========================
-        // 更新 quotations
+        // 更新工程基本資料
         // =========================
 
         const quotationData = {
 
             // 工程名稱
             project_name:
-                projectNameInput.value,
+                projectNameInput.value.trim(),
 
             // 工程日期
             project_date:
@@ -445,7 +569,7 @@ async function saveQuotation() {
 
             // 工程地址
             project_address:
-                projectAddressInput.value
+                projectAddressInput.value.trim()
 
         };
 
@@ -457,11 +581,14 @@ async function saveQuotation() {
                 currentQuotationId,
                 {
                     method: "PATCH",
+
                     headers: getHeaders(),
+
                     body:
                         JSON.stringify(
                             quotationData
                         )
+
                 }
             );
 
@@ -579,6 +706,9 @@ async function saveQuotation() {
             "估價單已儲存到 Supabase"
         );
 
+
+        return true;
+
     }
 
     catch (error) {
@@ -588,7 +718,11 @@ async function saveQuotation() {
             error
         );
 
-        throw error;
+        alert(
+            "儲存估價單失敗，請稍後再試。"
+        );
+
+        return false;
 
     }
 
@@ -603,7 +737,6 @@ async function saveQuotation() {
 
             savePending = false;
 
-            // 再儲存一次
             saveQuotation();
 
         }
@@ -616,11 +749,6 @@ async function saveQuotation() {
 // =========================
 // 延遲儲存估價單
 // =========================
-
-// 避免每打一個字
-// 就立刻向 Supabase 發送請求
-let saveTimer = null;
-
 
 function scheduleSaveQuotation() {
 
@@ -668,27 +796,37 @@ function setupRow(row) {
 
     // 取得品名輸入框
     const nameInput =
-        row.querySelector(".name");
+        row.querySelector(
+            ".name"
+        );
 
 
     // 取得規格輸入框
     const specInput =
-        row.querySelector(".spec");
+        row.querySelector(
+            ".spec"
+        );
 
 
     // 取得數量輸入框
     const quantityInput =
-        row.querySelector(".quantity");
+        row.querySelector(
+            ".quantity"
+        );
 
 
     // 取得單價輸入框
     const priceInput =
-        row.querySelector(".price");
+        row.querySelector(
+            ".price"
+        );
 
 
     // 取得備註輸入框
     const remarkInput =
-        row.querySelector(".remark");
+        row.querySelector(
+            ".remark"
+        );
 
 
     // 取得材料搜尋結果區域
@@ -700,111 +838,678 @@ function setupRow(row) {
 
     // 取得刪除按鈕
     const deleteButton =
-        row.querySelector(".deleteRow");
+        row.querySelector(
+            ".deleteRow"
+        );
 
 
-```javascript
-// =========================
-// 材料日期修改
-// =========================
+    // =========================
+    // 材料日期修改
+    // =========================
 
-materialDateInput.addEventListener(
-    "change",
-    function() {
+    if (materialDateInput) {
 
-        // 使用日期選擇器選擇日期後
-        // 自動儲存估價單
-        scheduleSaveQuotation();
+        materialDateInput.addEventListener(
+            "change",
+            function() {
+
+                // 使用日期選擇器選擇日期後
+                // 自動儲存估價單
+                scheduleSaveQuotation();
+
+            }
+        );
+
+
+        // =========================
+        // 點擊日期欄位
+        // 自動開啟日曆選擇器
+        // =========================
+
+        materialDateInput.addEventListener(
+            "click",
+            function() {
+
+                // 如果瀏覽器支援 showPicker()
+                // 就直接開啟日期選擇器
+                if (
+                    typeof materialDateInput.showPicker ===
+                    "function"
+                ) {
+
+                    try {
+
+                        materialDateInput.showPicker();
+
+                    }
+
+                    catch (error) {
+
+                        // 某些瀏覽器可能不允許重複開啟
+                        console.log(
+                            "日期選擇器由瀏覽器處理"
+                        );
+
+                    }
+
+                }
+
+            }
+        );
 
     }
-);
-
-
-// =========================
-// 點擊日期欄位
-// 自動開啟日曆選擇器
-// =========================
-
-materialDateInput.addEventListener(
-    "click",
-    function() {
-
-        // 如果瀏覽器支援 showPicker()
-        // 就直接開啟日期選擇器
-        if (
-            typeof materialDateInput.showPicker ===
-            "function"
-        ) {
-
-            materialDateInput.showPicker();
-
-        }
-
-    }
-);
-```
 
 
     // =========================
     // 輸入材料名稱
     // =========================
 
-    nameInput.addEventListener(
-        "input",
-        function() {
+    if (nameInput) {
 
-            // 取得輸入的文字
-            const keyword =
-                nameInput.value.trim();
+        nameInput.addEventListener(
+            "input",
+            function() {
 
-            // 清空舊的搜尋結果
-            suggestionBox.innerHTML = "";
-
-
-            // 如果沒有輸入文字
-            if (keyword === "") {
-
-                // 延遲儲存目前資料
-                scheduleSaveQuotation();
-
-                return;
-
-            }
+                // 取得輸入的文字
+                const keyword =
+                    nameInput.value.trim();
 
 
-            // =========================
-            // 找出可能的材料
-            // =========================
+                // 清空舊的搜尋結果
+                suggestionBox.innerHTML =
+                    "";
 
-            const results =
-                materials.filter(
+
+                // 如果沒有輸入文字
+                if (keyword === "") {
+
+                    scheduleSaveQuotation();
+
+                    return;
+
+                }
+
+
+                // =========================
+                // 找出可能的材料
+                // =========================
+
+                const results =
+                    materials.filter(
+                        function(item) {
+
+                            // 確保材料名稱存在
+                            if (!item.name) {
+
+                                return false;
+
+                            }
+
+
+                            // 材料名稱包含搜尋文字
+                            return item.name
+                                .toLowerCase()
+                                .includes(
+                                    keyword.toLowerCase()
+                                );
+
+                        }
+                    );
+
+
+                // =========================
+                // 顯示材料選項
+                // =========================
+
+                results.forEach(
                     function(item) {
 
-                        // 材料名稱包含搜尋文字
-                        return item.name
-                            .toLowerCase()
-                            .includes(
-                                keyword.toLowerCase()
+                        const suggestion =
+                            document.createElement(
+                                "div"
                             );
+
+
+                        // 顯示材料名稱和價格
+                        suggestion.textContent =
+                            item.name +
+                            "  $" +
+                            item.price;
+
+
+                        // =========================
+                        // 點選材料
+                        // =========================
+
+                        suggestion.addEventListener(
+                            "mousedown",
+                            function(event) {
+
+                                // 防止輸入框失去焦點
+                                event.preventDefault();
+
+                            }
+                        );
+
+
+                        suggestion.addEventListener(
+                            "click",
+                            function() {
+
+                                // 填入材料名稱
+                                nameInput.value =
+                                    item.name;
+
+
+                                // 填入規格
+                                specInput.value =
+                                    item.spec ||
+                                    "";
+
+
+                                // 填入單價
+                                priceInput.value =
+                                    item.price ||
+                                    0;
+
+
+                                // 計算金額
+                                calculateRow(
+                                    row
+                                );
+
+
+                                // 清除搜尋結果
+                                suggestionBox.innerHTML =
+                                    "";
+
+
+                                // 儲存估價單
+                                scheduleSaveQuotation();
+
+                            }
+                        );
+
+
+                        // 加入搜尋結果
+                        suggestionBox.appendChild(
+                            suggestion
+                        );
 
                     }
                 );
 
 
-            // =========================
-            // 顯示材料選項
-            // =========================
+                // =========================
+                // 沒有找到材料
+                // =========================
 
-            results.forEach(
-                function(item) {
+                if (
+                    results.length === 0
+                ) {
 
-                    const suggestion =
+                    const noResult =
                         document.createElement(
                             "div"
                         );
 
 
-                    // 顯示材料名稱和價格
-                    suggestion.textContent =
-                        item.name +
-                        "  $"
+                    noResult.textContent =
+                        "找不到已儲存的材料";
+
+
+                    noResult.style.color =
+                        "#999";
+
+
+                    suggestionBox.appendChild(
+                        noResult
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================
+        // 品名失去焦點
+        // =========================
+
+        nameInput.addEventListener(
+            "blur",
+            function() {
+
+                // 稍微延遲
+                // 讓使用者可以點選搜尋結果
+                setTimeout(
+                    function() {
+
+                        suggestionBox.innerHTML =
+                            "";
+
+                    },
+                    200
+                );
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // 規格修改
+    // =========================
+
+    if (specInput) {
+
+        specInput.addEventListener(
+            "input",
+            function() {
+
+                scheduleSaveQuotation();
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // 數量修改
+    // =========================
+
+    if (quantityInput) {
+
+        quantityInput.addEventListener(
+            "input",
+            function() {
+
+                // 重新計算金額
+                calculateRow(
+                    row
+                );
+
+
+                // 儲存估價單
+                scheduleSaveQuotation();
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // 單價修改
+    // =========================
+
+    if (priceInput) {
+
+        priceInput.addEventListener(
+            "input",
+            function() {
+
+                // 重新計算金額
+                calculateRow(
+                    row
+                );
+
+
+                // 儲存估價單
+                scheduleSaveQuotation();
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // 備註修改
+    // =========================
+
+    if (remarkInput) {
+
+        remarkInput.addEventListener(
+            "input",
+            function() {
+
+                scheduleSaveQuotation();
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // 刪除材料列
+    // =========================
+
+    if (deleteButton) {
+
+        deleteButton.addEventListener(
+            "click",
+            function() {
+
+                // 如果目前只有一列
+                if (
+                    materialTable.querySelectorAll(
+                        "tr"
+                    ).length <= 1
+                ) {
+
+                    // 不刪除最後一列
+                    // 只清空資料
+                    if (materialDateInput) {
+
+                        materialDateInput.value =
+                            "";
+
+                    }
+
+                    nameInput.value =
+                        "";
+
+                    specInput.value =
+                        "";
+
+                    quantityInput.value =
+                        "";
+
+                    priceInput.value =
+                        "";
+
+                    row.querySelector(
+                        ".amount"
+                    ).value =
+                        "";
+
+                    remarkInput.value =
+                        "";
+
+
+                    calculateTotal();
+
+                    scheduleSaveQuotation();
+
+                    return;
+
+                }
+
+
+                // 刪除這一列
+                row.remove();
+
+
+                // 重新計算總金額
+                calculateTotal();
+
+
+                // 儲存估價單
+                scheduleSaveQuotation();
+
+            }
+        );
+
+    }
+
+}
+
+
+// =========================
+// 新增材料列
+// =========================
+
+function addRow(materialDate = null) {
+
+    const row =
+        document.createElement(
+            "tr"
+        );
+
+
+    // 如果沒有指定日期
+    // 新增材料時預設使用今天
+    const dateValue =
+        materialDate ||
+        getTodayDate();
+
+
+    row.innerHTML = `
+
+        <!-- =========================
+             材料日期
+             ========================= -->
+
+        <td>
+
+            <input
+                type="date"
+                class="materialDate"
+                value="${dateValue}"
+            >
+
+        </td>
+
+
+        <!-- =========================
+             品名
+             ========================= -->
+
+        <td style="position: relative;">
+
+            <input
+                type="text"
+                class="name"
+                autocomplete="off"
+            >
+
+            <div class="materialSuggestions"></div>
+
+        </td>
+
+
+        <!-- =========================
+             規格
+             ========================= -->
+
+        <td>
+
+            <input
+                type="text"
+                class="spec"
+            >
+
+        </td>
+
+
+        <!-- =========================
+             數量
+             ========================= -->
+
+        <td>
+
+            <input
+                type="number"
+                class="quantity"
+            >
+
+        </td>
+
+
+        <!-- =========================
+             單價
+             ========================= -->
+
+        <td>
+
+            <input
+                type="number"
+                class="price"
+            >
+
+        </td>
+
+
+        <!-- =========================
+             金額
+             ========================= -->
+
+        <td>
+
+            <input
+                type="number"
+                class="amount"
+                readonly
+            >
+
+        </td>
+
+
+        <!-- =========================
+             備註
+             ========================= -->
+
+        <td>
+
+            <input
+                type="text"
+                class="remark"
+            >
+
+        </td>
+
+
+        <!-- =========================
+             操作
+             ========================= -->
+
+        <td class="operation-column">
+
+            <button
+                type="button"
+                class="deleteRow"
+            >
+                刪除
+            </button>
+
+        </td>
+
+    `;
+
+
+    // 將新的一列加入表格
+    materialTable.appendChild(
+        row
+    );
+
+
+    // 設定這一列的功能
+    setupRow(
+        row
+    );
+
+
+    // 重新計算總金額
+    calculateTotal();
+
+
+    return row;
+
+}
+
+
+// =========================
+// 從 Supabase 載入目前估價單
+// =========================
+
+async function loadQuotation() {
+
+    try {
+
+        // =========================
+        // 取得估價單基本資料
+        // =========================
+
+        const quotationResponse =
+            await fetch(
+                QUOTATIONS_API +
+                "?id=eq." +
+                currentQuotationId +
+                "&select=*",
+                {
+                    method: "GET",
+                    headers: getHeaders()
+                }
+            );
+
+
+        if (!quotationResponse.ok) {
+
+            const errorText =
+                await quotationResponse.text();
+
+            throw new Error(
+                errorText
+            );
+
+        }
+
+
+        const quotations =
+            await quotationResponse.json();
+
+
+        // 如果找不到估價單
+        if (
+            quotations.length === 0
+        ) {
+
+            alert(
+                "找不到這張估價單。"
+            );
+
+            window.location.href =
+                "quotation.html";
+
+            return;
+
+        }
+
+
+        const quotation =
+            quotations[0];
+
+
+        // =========================
+        // 填入工程基本資料
+        // =========================
+
+        projectNameInput.value =
+            quotation.project_name ||
+            "";
+
+
+        projectDateInput.value =
+            quotation.project_date ||
+            "";
+
+
+        projectAddressInput.value =
+            quotation.project_address ||
+            "";
+
+
+        // =========================
+        // 取得材料明細
+        // =========================
+
+        const itemsResponse =
+            await fetch(
+                QUOTATION_ITEMS_API +
+                "?quotation_id=eq." +
+                currentQuotationId +
+               
