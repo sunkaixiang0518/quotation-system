@@ -703,19 +703,46 @@ function setupRow(row) {
         row.querySelector(".deleteRow");
 
 
-    // =========================
-    // 材料日期修改
-    // =========================
+```javascript
+// =========================
+// 材料日期修改
+// =========================
 
-    materialDateInput.addEventListener(
-        "input",
-        function() {
+materialDateInput.addEventListener(
+    "change",
+    function() {
 
-            // 儲存估價單
-            scheduleSaveQuotation();
+        // 使用日期選擇器選擇日期後
+        // 自動儲存估價單
+        scheduleSaveQuotation();
+
+    }
+);
+
+
+// =========================
+// 點擊日期欄位
+// 自動開啟日曆選擇器
+// =========================
+
+materialDateInput.addEventListener(
+    "click",
+    function() {
+
+        // 如果瀏覽器支援 showPicker()
+        // 就直接開啟日期選擇器
+        if (
+            typeof materialDateInput.showPicker ===
+            "function"
+        ) {
+
+            materialDateInput.showPicker();
 
         }
-    );
+
+    }
+);
+```
 
 
     // =========================
