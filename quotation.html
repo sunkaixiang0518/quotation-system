@@ -64,7 +64,7 @@
 
 
         // Supabase 公開 anon key
-        // 這裡使用你之前設定好的 anon public key
+        // 請貼上你目前 material.js 使用的 anon public key
         const SUPABASE_KEY =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscGxvdm1vbXFibGdxb3BpaGNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxMjEsImV4cCI6MjEwNjYwOTEyMX0.GzszzXgUmF_Jq2dDH9QI61zUGuiy968ufzZM3H2qGoU";
 
@@ -335,7 +335,10 @@
                     };
 
 
+                    // =========================
                     // 將估價單新增到 Supabase
+                    // =========================
+
                     const response =
                         await fetch(
                             QUOTATIONS_API,
@@ -343,8 +346,16 @@
 
                                 method: "POST",
 
-                                headers:
-                                    getHeaders(),
+                                // 要求 Supabase
+                                // 回傳新建立的資料
+                                headers: {
+
+                                    ...getHeaders(),
+
+                                    "Prefer":
+                                        "return=representation"
+
+                                },
 
                                 body:
                                     JSON.stringify(
@@ -375,25 +386,59 @@
                     }
 
 
+                    // =========================
                     // 取得 Supabase 建立的估價單
+                    // =========================
+
                     const createdQuotation =
                         await response.json();
 
 
+                    // =========================
+                    // 確認 Supabase 有回傳資料
+                    // =========================
+
+                    if (
+                        !createdQuotation ||
+                        createdQuotation.length === 0
+                    ) {
+
+                        console.error(
+                            "Supabase 沒有回傳新估價單資料"
+                        );
+
+                        alert(
+                            "估價單建立成功，但沒有取得估價單 ID！"
+                        );
+
+                        return;
+
+                    }
+
+
+                    // =========================
                     // 取得建立完成的估價單 ID
+                    // =========================
+
                     const quotationId =
                         createdQuotation[0].id;
 
 
+                    // =========================
                     // 將目前估價單 ID
                     // 存到瀏覽器
+                    // =========================
+
                     localStorage.setItem(
                         "currentQuotationId",
                         quotationId
                     );
 
 
+                    // =========================
                     // 前往估價單
+                    // =========================
+
                     window.location.href =
                         "index.html";
 
@@ -463,7 +508,57 @@
 
             try {
 
-                // 刪除估價單
+                // =========================
+                // 先刪除估價單材料
+                // =========================
+
+                const quotationItemsApi =
+                    SUPABASE_URL +
+                    "/rest/v1/quotation_items";
+
+
+                const deleteItemsResponse =
+                    await fetch(
+                        quotationItemsApi +
+                        "?quotation_id=eq." +
+                        quotationId,
+                        {
+
+                            method: "DELETE",
+
+                            headers:
+                                getHeaders()
+
+                        }
+                    );
+
+
+                // 如果刪除材料失敗
+                if (
+                    !deleteItemsResponse.ok
+                ) {
+
+                    const errorText =
+                        await deleteItemsResponse.text();
+
+                    console.error(
+                        "刪除估價單材料失敗：",
+                        errorText
+                    );
+
+                    alert(
+                        "刪除估價單材料失敗！"
+                    );
+
+                    return;
+
+                }
+
+
+                // =========================
+                // 再刪除估價單
+                // =========================
+
                 const response =
                     await fetch(
                         QUOTATIONS_API +
@@ -480,7 +575,7 @@
                     );
 
 
-                // 如果刪除失敗
+                // 如果刪除估價單失敗
                 if (!response.ok) {
 
                     const errorText =
@@ -500,7 +595,10 @@
                 }
 
 
+                // =========================
                 // 如果刪除的是目前估價單
+                // =========================
+
                 const currentQuotationId =
                     localStorage.getItem(
                         "currentQuotationId"
@@ -520,7 +618,10 @@
                 }
 
 
+                // =========================
                 // 重新載入估價單
+                // =========================
+
                 loadQuotations();
 
 
