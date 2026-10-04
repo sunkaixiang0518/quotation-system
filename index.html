@@ -1,19 +1,25 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
+
     <meta charset="UTF-8">
 
     <title>水電材料估價單</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
 
+
 <body>
-    
+
+
     <div class="material-manager">
 
         <h2>材料管理</h2>
+
 
         <input
             type="text"
@@ -21,17 +27,20 @@
             placeholder="材料名稱"
         >
 
+
         <input
             type="text"
             id="materialSpec"
             placeholder="規格"
         >
 
+
         <input
             type="number"
             id="materialPrice"
             placeholder="單價"
         >
+
 
         <button id="saveMaterial">
             儲存材料
@@ -45,28 +54,39 @@
     <div class="info">
 
         <label>
+
             工程名稱：
+
             <input
                 type="text"
                 id="projectName"
             >
+
         </label>
 
+
         <label>
+
             日期：
+
             <input
                 type="date"
                 id="projectDate"
             >
+
         </label>
 
+
         <label>
+
             地址：
+
             <input
                 type="text"
                 id="projectAddress"
                 placeholder="請輸入工程地址"
             >
+
         </label>
 
     </div>
@@ -78,19 +98,48 @@
 
             <tr>
 
-                <th>品名</th>
+                <!-- 材料使用日期 -->
 
-                <th>規格</th>
+                <th>
+                    日期
+                </th>
 
-                <th>數量</th>
 
-                <th>單價</th>
+                <!-- 品名 -->
 
-                <th>金額</th>
+                <th>
+                    品名
+                </th>
 
-                <th>備註</th>
 
-                <th class="operation-column">操作</th>
+                <th>
+                    規格
+                </th>
+
+
+                <th>
+                    數量
+                </th>
+
+
+                <th>
+                    單價
+                </th>
+
+
+                <th>
+                    金額
+                </th>
+
+
+                <th>
+                    備註
+                </th>
+
+
+                <th class="operation-column">
+                    操作
+                </th>
 
             </tr>
 
@@ -101,6 +150,25 @@
 
             <tr>
 
+
+                <!-- =========================
+                     材料日期
+                     ========================= -->
+
+                <td>
+
+                    <input
+                        type="date"
+                        class="materialDate"
+                    >
+
+                </td>
+
+
+                <!-- =========================
+                     品名
+                     ========================= -->
+
                 <td style="position: relative;">
 
                     <input
@@ -108,9 +176,15 @@
                         class="name"
                     >
 
+
                     <div class="materialSuggestions"></div>
 
                 </td>
+
+
+                <!-- =========================
+                     規格
+                     ========================= -->
 
                 <td>
 
@@ -121,6 +195,11 @@
 
                 </td>
 
+
+                <!-- =========================
+                     數量
+                     ========================= -->
+
                 <td>
 
                     <input
@@ -130,6 +209,11 @@
 
                 </td>
 
+
+                <!-- =========================
+                     單價
+                     ========================= -->
+
                 <td>
 
                     <input
@@ -138,6 +222,11 @@
                     >
 
                 </td>
+
+
+                <!-- =========================
+                     金額
+                     ========================= -->
 
                 <td>
 
@@ -149,6 +238,11 @@
 
                 </td>
 
+
+                <!-- =========================
+                     備註
+                     ========================= -->
+
                 <td>
 
                     <input
@@ -158,6 +252,11 @@
 
                 </td>
 
+
+                <!-- =========================
+                     操作
+                     ========================= -->
+
                 <td class="operation-column">
 
                     <button class="deleteRow">
@@ -166,12 +265,15 @@
 
                 </td>
 
+
             </tr>
 
         </tbody>
 
     </table>
 
+
+    <!-- 新增材料 -->
 
     <button id="addRow">
         ＋ 新增材料
@@ -185,6 +287,8 @@
     </button>
 
 
+    <!-- 匯出 PDF -->
+
     <button id="printQuotation">
         匯出 PDF
     </button>
@@ -193,7 +297,11 @@
     <h2>
 
         合計：
-        <span id="totalAmount">0</span>
+
+        <span id="totalAmount">
+            0
+        </span>
+
         元
 
     </h2>
@@ -201,6 +309,8 @@
 
     <script src="app.js"></script>
 
+
 </body>
 
 </html>
+```
