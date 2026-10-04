@@ -25,7 +25,7 @@
 
     <!-- 估價單列表 -->
 
-    <h2>我的估價單</h2>
+    <h2>所有估價單</h2>
 
     <table>
 
@@ -36,6 +36,8 @@
                 <th>工程名稱</th>
 
                 <th>建立日期</th>
+
+                <th>地址</th>
 
                 <th>操作</th>
 
@@ -53,23 +55,61 @@
     <script>
 
         // =========================
-        // 取得估價單資料
+        // Supabase 設定
         // =========================
 
-        let quotations = JSON.parse(
-            localStorage.getItem("quotations")
-        ) || [];
+        // Supabase 專案網址
+        const SUPABASE_URL =
+            "https://ilplovmomqblgqopihce.supabase.co";
+
+
+        // Supabase 公開 anon key
+        // 這裡使用你之前設定好的 anon public key
+        const SUPABASE_KEY =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscGxvdm1vbXFibGdxb3BpaGNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxMjEsImV4cCI6MjEwNjYwOTEyMX0.GzszzXgUmF_Jq2dDH9QI61zUGuiy968ufzZM3H2qGoU";
+
+
+        // quotations 資料表 API
+        const QUOTATIONS_API =
+            SUPABASE_URL +
+            "/rest/v1/quotations";
+
+
+        // =========================
+        // 建立 Supabase API 標頭
+        // =========================
+
+        function getHeaders() {
+
+            return {
+
+                "apikey":
+                    SUPABASE_KEY,
+
+                "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY,
+
+                "Content-Type":
+                    "application/json"
+
+            };
+
+        }
 
 
         // =========================
         // 取得 HTML 元素
         // =========================
 
+        // 取得估價單表格
         const quotationTable =
             document.getElementById(
                 "quotationTable"
             );
 
+
+        // 取得新增估價單按鈕
         const newQuotationButton =
             document.getElementById(
                 "newQuotation"
@@ -77,43 +117,155 @@
 
 
         // =========================
+        // 從 Supabase 取得所有估價單
+        // =========================
+
+        async function loadQuotations() {
+
+            try {
+
+                // 向 Supabase 要求所有估價單
+                const response =
+                    await fetch(
+                        QUOTATIONS_API +
+                        "?select=*&order=id.desc",
+                        {
+
+                            method: "GET",
+
+                            headers:
+                                getHeaders()
+
+                        }
+                    );
+
+
+                // 如果取得資料失敗
+                if (!response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "取得估價單失敗：",
+                        errorText
+                    );
+
+                    alert(
+                        "取得估價單失敗！"
+                    );
+
+                    return;
+
+                }
+
+
+                // 將 Supabase 回傳的 JSON 轉成資料
+                const quotations =
+                    await response.json();
+
+
+                // 顯示估價單
+                displayQuotations(
+                    quotations
+                );
+
+
+            }
+            catch (error) {
+
+                console.error(
+                    "取得估價單發生錯誤：",
+                    error
+                );
+
+                alert(
+                    "無法連線到 Supabase！"
+                );
+
+            }
+
+        }
+
+
+        // =========================
         // 顯示估價單
         // =========================
 
-        function displayQuotations() {
+        function displayQuotations(
+            quotations
+        ) {
 
             // 清空列表
-            quotationTable.innerHTML = "";
+            quotationTable.innerHTML =
+                "";
 
 
-            // 一筆一筆顯示
+            // 如果沒有估價單
+            if (
+                quotations.length === 0
+            ) {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td colspan="4">
+
+                        目前沒有估價單
+
+                    </td>
+
+                `;
+
+
+                quotationTable.appendChild(
+                    row
+                );
+
+                return;
+
+            }
+
+
+            // 一筆一筆顯示估價單
             quotations.forEach(
-                function(quotation, index) {
+                function(quotation) {
 
                     const row =
-                        document.createElement("tr");
+                        document.createElement(
+                            "tr"
+                        );
 
 
                     row.innerHTML = `
 
                         <td>
-                            ${quotation.name}
+                            ${quotation.project_name || ""}
                         </td>
 
                         <td>
-                            ${quotation.date}
+                            ${quotation.project_date || ""}
+                        </td>
+
+                        <td>
+                            ${quotation.project_address || ""}
                         </td>
 
                         <td>
 
                             <button
-                                onclick="openQuotation(${index})"
+                                onclick="openQuotation(${quotation.id})"
                             >
                                 開啟
                             </button>
 
                             <button
-                                onclick="deleteQuotation(${index})"
+                                onclick="deleteQuotation(${quotation.id})"
                             >
                                 刪除
                             </button>
@@ -123,7 +275,9 @@
                     `;
 
 
-                    quotationTable.appendChild(row);
+                    quotationTable.appendChild(
+                        row
+                    );
 
                 }
             );
@@ -137,7 +291,7 @@
 
         newQuotationButton.addEventListener(
             "click",
-            function() {
+            async function() {
 
                 // 請使用者輸入工程名稱
                 const name =
@@ -154,50 +308,109 @@
                 }
 
 
-                // 建立新的估價單 ID
-                const id =
-                    Date.now().toString();
+                try {
+
+                    // 建立今天日期
+                    const today =
+                        new Date()
+                            .toISOString()
+                            .split("T")[0];
 
 
-                // 建立今天日期
-                const date =
-                    new Date()
-                        .toLocaleDateString(
-                            "zh-TW"
+                    // 建立新的估價單資料
+                    const quotationData = {
+
+                        // 工程名稱
+                        project_name:
+                            name,
+
+                        // 建立日期
+                        project_date:
+                            today,
+
+                        // 初始地址
+                        project_address:
+                            ""
+
+                    };
+
+
+                    // 將估價單新增到 Supabase
+                    const response =
+                        await fetch(
+                            QUOTATIONS_API,
+                            {
+
+                                method: "POST",
+
+                                headers:
+                                    getHeaders(),
+
+                                body:
+                                    JSON.stringify(
+                                        quotationData
+                                    )
+
+                            }
                         );
 
 
-                // 建立估價單
-                const quotation = {
+                    // 如果新增失敗
+                    if (!response.ok) {
 
-                    id: id,
+                        const errorText =
+                            await response.text();
 
-                    name: name,
+                        console.error(
+                            "新增估價單失敗：",
+                            errorText
+                        );
 
-                    date: date
+                        alert(
+                            "新增估價單失敗！"
+                        );
 
-                };
+                        return;
 
-
-                // 加入估價單列表
-                quotations.push(
-                    quotation
-                );
-
-
-                // 儲存估價單列表
-                localStorage.setItem(
-                    "quotations",
-                    JSON.stringify(
-                        quotations
-                    )
-                );
+                    }
 
 
-                // 直接開啟新的估價單
-                openQuotation(
-                    quotations.length - 1
-                );
+                    // 取得 Supabase 建立的估價單
+                    const createdQuotation =
+                        await response.json();
+
+
+                    // 取得建立完成的估價單 ID
+                    const quotationId =
+                        createdQuotation[0].id;
+
+
+                    // 將目前估價單 ID
+                    // 存到瀏覽器
+                    localStorage.setItem(
+                        "currentQuotationId",
+                        quotationId
+                    );
+
+
+                    // 前往估價單
+                    window.location.href =
+                        "index.html";
+
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "新增估價單發生錯誤：",
+                        error
+                    );
+
+                    alert(
+                        "無法連線到 Supabase！"
+                    );
+
+                }
 
             }
         );
@@ -207,17 +420,15 @@
         // 開啟估價單
         // =========================
 
-        function openQuotation(index) {
-
-            const quotation =
-                quotations[index];
-
+        function openQuotation(
+            quotationId
+        ) {
 
             // 把目前估價單 ID
             // 存到瀏覽器
             localStorage.setItem(
                 "currentQuotationId",
-                quotation.id
+                quotationId
             );
 
 
@@ -232,7 +443,9 @@
         // 刪除估價單
         // =========================
 
-        function deleteQuotation(index) {
+        async function deleteQuotation(
+            quotationId
+        ) {
 
             // 確認是否刪除
             const confirmDelete =
@@ -248,36 +461,82 @@
             }
 
 
-            // 取得估價單
-            const quotation =
-                quotations[index];
+            try {
+
+                // 刪除估價單
+                const response =
+                    await fetch(
+                        QUOTATIONS_API +
+                        "?id=eq." +
+                        quotationId,
+                        {
+
+                            method: "DELETE",
+
+                            headers:
+                                getHeaders()
+
+                        }
+                    );
 
 
-            // 刪除估價單
-            quotations.splice(
-                index,
-                1
-            );
+                // 如果刪除失敗
+                if (!response.ok) {
+
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "刪除估價單失敗：",
+                        errorText
+                    );
+
+                    alert(
+                        "刪除估價單失敗！"
+                    );
+
+                    return;
+
+                }
 
 
-            // 更新估價單列表
-            localStorage.setItem(
-                "quotations",
-                JSON.stringify(
-                    quotations
-                )
-            );
+                // 如果刪除的是目前估價單
+                const currentQuotationId =
+                    localStorage.getItem(
+                        "currentQuotationId"
+                    );
 
 
-            // 刪除這張估價單的內容
-            localStorage.removeItem(
-                "quotation_" +
-                quotation.id
-            );
+                if (
+                    currentQuotationId ===
+                    String(quotationId)
+                ) {
+
+                    // 清除目前估價單 ID
+                    localStorage.removeItem(
+                        "currentQuotationId"
+                    );
+
+                }
 
 
-            // 重新顯示
-            displayQuotations();
+                // 重新載入估價單
+                loadQuotations();
+
+
+            }
+            catch (error) {
+
+                console.error(
+                    "刪除估價單發生錯誤：",
+                    error
+                );
+
+                alert(
+                    "無法連線到 Supabase！"
+                );
+
+            }
 
         }
 
@@ -286,7 +545,7 @@
         // 網頁載入時
         // =========================
 
-        displayQuotations();
+        loadQuotations();
 
     </script>
 
