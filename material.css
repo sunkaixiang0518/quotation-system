@@ -113,11 +113,17 @@ th {
 }
 
 
-/* 刪除按鈕 */
 
+/* =========================
+   編輯與刪除按鈕：統一大小
+   ========================= */
+
+.editMaterial,
 .deleteMaterial {
-
-    padding: 6px 12px;
-
+    width: 64px;
+    height: 32px;
+    padding: 0;
     font-size: 14px;
+    box-sizing: border-box;
+    cursor: pointer;
 }
